@@ -22,10 +22,19 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const userDetailsCollection = client.db('ThesisRepo').collection("UsersData")
+    const thesisCollection = client.db('ThesisRepo').collection("ThesisFile")
+
 
     app.post('/users', async(req,res)=>{
         const allUser = req.body
         const result = userDetailsCollection.insertOne(allUser)
+        res.send(result)
+    })
+
+
+    app.post('/thesisFiles', async(req,res)=>{
+        const papers = req.body
+        const result = thesisCollection.insertOne(papers)
         res.send(result)
     })
   } finally {
