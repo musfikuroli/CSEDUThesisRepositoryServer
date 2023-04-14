@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
+
 const port = process.env.PORT || 4000;
 
 const app = express();
@@ -9,8 +11,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cseduthesisrepository.mwrh9uf.mongodb.net/?retryWrites=true&w=majority`;
+// console.log(uri)
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverApi: ServerApiVersion.v1,
+});
+
 async function run() {
   try {
+    const userDetailsCollection = client.db('ThesisRepo').collection("UsersData")
+
+    app.post('/users', async(req,res)=>{
+        const allUser = req.body
+        const result = userDetailsCollection.insertOne(allUser)
+        res.send(result)
+    })
   } finally {
   }
 }
