@@ -4,7 +4,13 @@ const multer = require("multer");
 const path = require("path");
 //--------------------------//
 const cors = require("cors");
-const { MongoClient, ServerApiVersion, ObjectId, mongodb } = require("mongodb");
+const {
+  MongoClient,
+  GridFSBucket,
+  ServerApiVersion,
+  ObjectId,
+  mongodb,
+} = require("mongodb");
 require("dotenv").config();
 
 const port = process.env.PORT || 2000;
@@ -94,14 +100,14 @@ async function run() {
     );
     //----------------------------------//
 
-    // app.get("/thesisFiles/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const objectOne = new ObjectId(id);
-    //   const query = { _id: objectOne };
-    //   const cursor = thesisCollection.find(query);
-    //   const oneFile = await cursor.toArray();
-    //   res.send(oneFile);
-    // });
+    app.get("/thesisFiles/:id", async (req, res) => {
+      const id = req.params.id;
+      const objectOne = new ObjectId(id);
+      const query = { _id: objectOne };
+      const cursor = thesisCollection.find(query);
+      const oneFile = await cursor.toArray();
+      res.send(oneFile);
+    });
     app.get("/thesisFiles", async (req, res) => {
       const query = {};
       const thesisData = await thesisCollection.find(query).toArray();
