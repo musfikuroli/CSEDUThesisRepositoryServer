@@ -1,9 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 2000;
 
 const app = express();
 
@@ -21,22 +21,37 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    const userDetailsCollection = client.db('ThesisRepo').collection("UsersData")
-    const thesisCollection = client.db('ThesisRepo').collection("ThesisFile")
+    const userDetailsCollection = client
+      .db("ThesisRepo")
+      .collection("UsersData");
+    const thesisCollection = client.db("ThesisRepo").collection("ThesisFile");
 
+    app.post("/users", async (req, res) => {
+      const allUser = req.body;
+      const result = userDetailsCollection.insertOne(allUser);
+      res.send(result);
+    });
 
-    app.post('/users', async(req,res)=>{
-        const allUser = req.body
-        const result = userDetailsCollection.insertOne(allUser)
-        res.send(result)
-    })
+    app.post("/thesisFiles", async (req, res) => {
+      const papers = req.body;
+      const result = thesisCollection.insertOne(papers);
+      res.send(result);
+    });
 
-
-    app.post('/thesisFiles', async(req,res)=>{
-        const papers = req.body
-        const result = thesisCollection.insertOne(papers)
-        res.send(result)
-    })
+    app.get("/thesisFiles/:id", async (req, res) => {
+      const id = req.params.id;
+      const objectOne = new ObjectId(id);
+      const query = { _id: objectOne };
+      const cursor = thesisCollection.find(query);
+      const oneFile = await cursor.toArray();
+      res.send(oneFile);
+    });
+    // thesis files get
+    app.get("/thesisFiles", async (req, res) => {
+      const query = {};
+      const thesisData = await thesisCollection.find(query).toArray();
+      res.send(thesisData);
+    });
   } finally {
   }
 }
