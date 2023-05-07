@@ -90,7 +90,6 @@ async function run() {
             });
             return;
           }
-          console.log(result.ops[0]);
           res.status(200).send({
             acknowledged: true,
             message: "File submitted successfully",
@@ -99,6 +98,23 @@ async function run() {
       }
     );
     //----------------------------------//
+
+    //-----------------------------------//
+
+    app.get("/oneThesisFile/:id", async (req, res) => {
+      const id = req.params.id;
+      const objectOne = new ObjectId(id);
+      const cursor = await thesisCollection.findOne({ _id: objectOne });
+      if (!cursor) {
+        console.log("File not found");
+        return res.status(404).send("File not found");
+      }
+      const pdf = cursor.pdf.buffer;
+      res.setHeader("Content-Type", "application/pdf");
+      res.send(pdf);
+    });
+
+    //-----------------------------------//
 
     app.get("/thesisFiles/:id", async (req, res) => {
       const id = req.params.id;
