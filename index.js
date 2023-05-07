@@ -105,13 +105,40 @@ async function run() {
       const objectOne = new ObjectId(id);
       const query = { _id: objectOne };
       const cursor = thesisCollection.find(query);
+
       const oneFile = await cursor.toArray();
+
       res.send(oneFile);
     });
     app.get("/thesisFiles", async (req, res) => {
       const query = {};
-      const thesisData = await thesisCollection.find(query).toArray();
+      const thesisData = await thesisCollection
+        .find(query)
+        .sort({ publicationYear: -1 })
+        .toArray();
       res.send(thesisData);
+    });
+
+    app.get("/publicationYear", async (req, res) => {
+      const pipeline = [
+        {
+          $group: {
+            _id: "$publicationYear",
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            publicationYear: "$_id",
+          },
+        },
+      ];
+
+      const thesisYear = await thesisCollection
+        .aggregate(pipeline)
+        .sort({ publicationYear: -1 })
+        .toArray();
+      res.send(thesisYear);
     });
   } finally {
   }
