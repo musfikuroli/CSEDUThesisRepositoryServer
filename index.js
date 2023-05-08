@@ -126,6 +126,16 @@ async function run() {
 
       res.send(oneFile);
     });
+
+    app.get("/pages/:year", async (req, res) => {
+      const year = req.params.year;
+      const query = { publicationYear: year };
+      const cursor = thesisCollection.find(query);
+
+      const oneFile = await cursor.toArray();
+
+      res.send(oneFile);
+    });
     app.get("/thesisFiles", async (req, res) => {
       const query = {};
       const thesisData = await thesisCollection
