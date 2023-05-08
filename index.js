@@ -3,6 +3,11 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 //--------------------------//
+//--------------------------//
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+//--------------------------//
 const cors = require("cors");
 const {
   MongoClient,
@@ -13,14 +18,14 @@ const {
 } = require("mongodb");
 require("dotenv").config();
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 2000;
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 //---------------------------//
-const upload = multer({ dest: "uploads/" });
+// const upload = multer({ dest: "uploads/" });
 //---------------------------//
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cseduthesisrepository.mwrh9uf.mongodb.net/?retryWrites=true&w=majority`;
@@ -44,6 +49,60 @@ async function run() {
     });
 
     //----------------------------------//
+    // app.post(
+    //   "/thesisFiles",
+    //   upload.fields([
+    //     { name: "pdf", maxCount: 1 },
+    //     { name: "latex", maxCount: 1 },
+    //   ]),
+    //   (req, res) => {
+    //     const {
+    //       memberOne,
+    //       memberTwo,
+    //       email,
+    //       description,
+    //       publicationYear,
+    //       supervisor,
+    //       projectTitle,
+    //       category,
+    //     } = req.body;
+    //     const pdf = req.files.pdf[0];
+    //     const latex = req.files.latex[0];
+    //     const date = new Date();
+
+    //     // create new file object to insert into database
+    //     const newFile = {
+    //       memberOne,
+    //       memberTwo,
+    //       email,
+    //       description,
+    //       publicationYear,
+    //       supervisor,
+    //       projectTitle,
+    //       category,
+    //       pdf,
+    //       latex,
+    //       date,
+    //     };
+
+    //     // insert new file into database
+    //     thesisCollection.insertOne(newFile, (err, result) => {
+    //       if (err) {
+    //         console.log(err);
+    //         res.status(500).send({
+    //           acknowledged: false,
+    //           message: "Failed to insert file into database",
+    //         });
+    //         return;
+    //       }
+    //       res.status(200).send({
+    //         acknowledged: true,
+    //         message: "File submitted successfully",
+    //       });
+    //     });
+    //   }
+    // );
+
     app.post(
       "/thesisFiles",
       upload.fields([
@@ -61,9 +120,12 @@ async function run() {
           projectTitle,
           category,
         } = req.body;
-        const pdf = req.files.pdf[0];
-        const latex = req.files.latex[0];
+        const pdf = req.files["pdf"][0].buffer;
+        const latex = req.files["latex"][0].buffer;
         const date = new Date();
+
+        console.log(`pdf buffer length: ${pdf?.length}`);
+        console.log(`latex buffer length: ${latex?.length}`);
 
         // create new file object to insert into database
         const newFile = {
@@ -79,6 +141,9 @@ async function run() {
           latex,
           date,
         };
+
+        console.log(`pdf data type: ${typeof pdf}`);
+        console.log(`latex data type: ${typeof latex}`);
 
         // insert new file into database
         thesisCollection.insertOne(newFile, (err, result) => {
@@ -97,22 +162,44 @@ async function run() {
         });
       }
     );
+
     //----------------------------------//
 
     //-----------------------------------//
-
     app.get("/oneThesisFile/:id", async (req, res) => {
-      const id = req.params.id;
-      const objectOne = new ObjectId(id);
-      const cursor = await thesisCollection.findOne({ _id: objectOne });
-      if (!cursor) {
-        console.log("File not found");
-        return res.status(404).send("File not found");
+      try {
+        const id = req.params.id;
+        const objectOne = new ObjectId(id);
+        const cursor = await thesisCollection.findOne({ _id: objectOne });
+        if (!cursor) {
+          console.log("File not found");
+          return res.status(404).send("File not found");
+        }
+        const pdfBuffer = cursor.pdf.buffer;
+        if (!pdfBuffer || pdfBuffer.length === 0) {
+          console.log("PDF file is empty");
+          return res.status(500).send("PDF file is empty");
+        }
+        res.setHeader("Content-Type", "application/pdf");
+        res.send(pdfBuffer);
+      } catch (err) {
+        console.log("Error retrieving PDF file", err);
+        res.status(500).send("Error retrieving PDF file");
       }
-      const pdf = cursor.pdf.buffer;
-      res.setHeader("Content-Type", "application/pdf");
-      res.send(pdf);
     });
+
+    // app.get("/oneThesisFile/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const objectOne = new ObjectId(id);
+    //   const cursor = await thesisCollection.findOne({ _id: objectOne });
+    //   if (!cursor) {
+    //     console.log("File not found");
+    //     return res.status(404).send("File not found");
+    //   }
+    //   const pdf = cursor.pdf.buffer;
+    //   res.setHeader("Content-Type", "application/pdf");
+    //   res.sendFile(pdf);
+    // });
 
     //-----------------------------------//
 
