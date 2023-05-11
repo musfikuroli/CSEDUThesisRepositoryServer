@@ -49,59 +49,6 @@ async function run() {
     });
 
     //----------------------------------//
-    // app.post(
-    //   "/thesisFiles",
-    //   upload.fields([
-    //     { name: "pdf", maxCount: 1 },
-    //     { name: "latex", maxCount: 1 },
-    //   ]),
-    //   (req, res) => {
-    //     const {
-    //       memberOne,
-    //       memberTwo,
-    //       email,
-    //       description,
-    //       publicationYear,
-    //       supervisor,
-    //       projectTitle,
-    //       category,
-    //     } = req.body;
-    //     const pdf = req.files.pdf[0];
-    //     const latex = req.files.latex[0];
-    //     const date = new Date();
-
-    //     // create new file object to insert into database
-    //     const newFile = {
-    //       memberOne,
-    //       memberTwo,
-    //       email,
-    //       description,
-    //       publicationYear,
-    //       supervisor,
-    //       projectTitle,
-    //       category,
-    //       pdf,
-    //       latex,
-    //       date,
-    //     };
-
-    //     // insert new file into database
-    //     thesisCollection.insertOne(newFile, (err, result) => {
-    //       if (err) {
-    //         console.log(err);
-    //         res.status(500).send({
-    //           acknowledged: false,
-    //           message: "Failed to insert file into database",
-    //         });
-    //         return;
-    //       }
-    //       res.status(200).send({
-    //         acknowledged: true,
-    //         message: "File submitted successfully",
-    //       });
-    //     });
-    //   }
-    // );
 
     app.post(
       "/thesisFiles",
@@ -188,25 +135,21 @@ async function run() {
       }
     });
 
-    // app.get("/oneThesisFile/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const objectOne = new ObjectId(id);
-    //   const cursor = await thesisCollection.findOne({ _id: objectOne });
-    //   if (!cursor) {
-    //     console.log("File not found");
-    //     return res.status(404).send("File not found");
-    //   }
-    //   const pdf = cursor.pdf.buffer;
-    //   res.setHeader("Content-Type", "application/pdf");
-    //   res.sendFile(pdf);
-    // });
-
     //-----------------------------------//
 
     app.get("/thesisFiles/:id", async (req, res) => {
       const id = req.params.id;
       const objectOne = new ObjectId(id);
       const query = { _id: objectOne };
+      const cursor = thesisCollection.find(query);
+
+      const oneFile = await cursor.toArray();
+
+      res.send(oneFile);
+    });
+    app.get("/submission/:email", async (req, res) => {
+      const emailData = req.params.email;
+      const query = { email: emailData };
       const cursor = thesisCollection.find(query);
 
       const oneFile = await cursor.toArray();
