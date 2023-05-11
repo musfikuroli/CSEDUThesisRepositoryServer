@@ -52,10 +52,9 @@ async function run() {
 
     app.post(
       "/thesisFiles",
-      upload.fields([
-        { name: "pdf", maxCount: 1 },
-        { name: "latex", maxCount: 1 },
-      ]),
+      upload.fields([{ name: "pdf", maxCount: 1 }]),
+      // { name: "latex", maxCount: 1 },
+
       (req, res) => {
         const {
           memberOne,
@@ -68,11 +67,11 @@ async function run() {
           category,
         } = req.body;
         const pdf = req.files["pdf"][0].buffer;
-        const latex = req.files["latex"][0].buffer;
+        // const latex = req.files["latex"][0].buffer;
         const date = new Date();
 
-        console.log(`pdf buffer length: ${pdf?.length}`);
-        console.log(`latex buffer length: ${latex?.length}`);
+        // console.log(`pdf buffer length: ${pdf?.length}`);
+        // console.log(`latex buffer length: ${latex?.length}`);
 
         // create new file object to insert into database
         const newFile = {
@@ -85,12 +84,11 @@ async function run() {
           projectTitle,
           category,
           pdf,
-          latex,
           date,
         };
 
-        console.log(`pdf data type: ${typeof pdf}`);
-        console.log(`latex data type: ${typeof latex}`);
+        // console.log(`pdf data type: ${typeof pdf}`);
+        // console.log(`latex data type: ${typeof latex}`);
 
         // insert new file into database
         thesisCollection.insertOne(newFile, (err, result) => {
@@ -147,6 +145,7 @@ async function run() {
 
       res.send(oneFile);
     });
+
     app.get("/submission/:email", async (req, res) => {
       const emailData = req.params.email;
       const query = { email: emailData };
