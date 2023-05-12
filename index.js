@@ -145,6 +145,19 @@ async function run() {
 
       res.send(oneFile);
     });
+    // deleting data
+    app.delete("/thesisFiles/:id", async (req, res) => {
+      const id = req.params.id;
+      const objectOne = new ObjectId(id);
+      const query = { _id: objectOne };
+      const result = await thesisCollection.deleteOne(query);
+
+      if (result.deletedCount === 1) {
+        res.send("Successfully deleted document with ID " + id);
+      } else {
+        res.status(404).send("Document with ID " + id + " not found");
+      }
+    });
 
     app.get("/submission/:email", async (req, res) => {
       const emailData = req.params.email;
