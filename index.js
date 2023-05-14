@@ -208,6 +208,21 @@ async function run() {
         .toArray();
       res.send(thesisYear);
     });
+
+    // searching code
+    app.get("/yourSearch", async (req, res) => {
+      const query = decodeURIComponent(req.query.query);
+      // console.log(query.toLowerCase());
+      const thesisData = await thesisCollection.find({}).toArray();
+      // console.log(thesisData.map((item) => typeof item.projectTitle));
+
+      const filteredPublications = thesisData.filter(
+        (item) =>
+          item.projectTitle &&
+          item.projectTitle.toLowerCase().includes(query.toLowerCase())
+      );
+      res.json(filteredPublications);
+    });
   } finally {
   }
 }
